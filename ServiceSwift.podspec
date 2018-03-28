@@ -15,5 +15,6 @@ Pod::Spec.new do |s|
 
   s.frameworks       = 'Foundation'
   s.module_name      = 'ServiceSwift'
-  
+  s.dependency		 = 'ConcurrentSwift', ~> '0.1'	
+
 end
