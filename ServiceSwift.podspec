@@ -10,11 +10,11 @@ Pod::Spec.new do |s|
   s.requires_arc     = true
   s.pod_target_xcconfig = { 'SWIFT_VERSION' => '4.0' }
 
-  s.source           = { :git => 'https://github.com/msfrms/ServiceSwift' }
+  s.source           = { :git => 'https://github.com/msfrms/ServiceSwift' :tag => s.version.to_s }
   s.source_files	 = 'Source/*.swift'
 
   s.frameworks       = 'Foundation'
   s.module_name      = 'ServiceSwift'
-  s.dependency		 = 'ConcurrentSwift', '~> 0.1'	
+  s.dependency 'ConcurrentSwift', '~> 0.1'	
 
 end
