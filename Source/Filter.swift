@@ -6,11 +6,11 @@
 import Foundation
 import ConcurrentSwift
 
-public class Filter<ReqIn, RepOut, ReqOut, RepIn> {
+open class Filter<ReqIn, RepOut, ReqOut, RepIn> {
 
     public init() {}
 
-    public func apply(request: ReqIn, service: Service<ReqOut, RepIn>) -> Future<RepOut> {
+    open func apply(request: ReqIn, service: Service<ReqOut, RepIn>) -> Future<RepOut> {
         return Future.never
     }
 
@@ -59,8 +59,8 @@ public class Filter<ReqIn, RepOut, ReqOut, RepIn> {
     }
 }
 
-public class SimpleFilter<Req, Rep>: Filter<Req, Rep, Req, Rep> {
-    public override func apply(request: Req, service: Service<Req, Rep>) -> Future<Rep> {
+open class SimpleFilter<Req, Rep>: Filter<Req, Rep, Req, Rep> {
+    open override func apply(request: Req, service: Service<Req, Rep>) -> Future<Rep> {
         return Future.never
     }
 }
@@ -97,13 +97,15 @@ public class TimeoutFilter<Req, Rep>: SimpleFilter<Req, Rep> {
 
     public override func apply(request: Req, service: Service<Req, Rep>) -> Future<Rep> {
         return service.apply(request: request)
-                .timeout(self.timeout, forQueue: self.queue)
-                .rescue { (error: Error) -> Future<Rep> in
-                    switch error {
-                    case is Future<Rep>.TimeoutError: service.cancel()
-                    default: ()
-                    }
-                    return Future.failed(error)
+            .timeout(self.timeout, forQueue: self.queue)
+            .rescue { (error: Error) -> Future<Rep> in
+                switch error {
+                case is Future<Rep>.TimeoutError: service.cancel()
+                default: ()
                 }
+                return Future.failed(error)
+        }
     }
 }
+
+
