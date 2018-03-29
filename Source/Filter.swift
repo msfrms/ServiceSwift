@@ -8,6 +8,8 @@ import ConcurrentSwift
 
 public class Filter<ReqIn, RepOut, ReqOut, RepIn> {
 
+    public init() {}
+
     public func apply(request: ReqIn, service: Service<ReqOut, RepIn>) -> Future<RepOut> {
         return Future.never
     }

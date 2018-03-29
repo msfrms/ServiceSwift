@@ -11,6 +11,9 @@ public extension Future {
 }
 
 public class Service<Req, Rep> {
+
+    public init() {}
+
     public func apply(request: Req) -> Future<Rep> { return .never }
 
     @discardableResult
