@@ -14,9 +14,19 @@ public class NetworkDataService: Service<URLRequest, (Data, HTTPURLResponse)> {
     }
 
     private var task: URLSessionDataTask?
+    private let queue: DispatchQueue
+
+    public init(queue: DispatchQueue) {
+        self.queue = queue
+    }
+
+    public override init() {
+        self.queue = .global(qos: .default)
+        super.init()
+    }
 
     public override func apply(request: URLRequest) -> Future<(Data, HTTPURLResponse)> {
-        return Future { complete in
+        return Future(queue: self.queue) { complete in
             self.task = URLSession.shared.dataTask(with: request) { data, response, error in
                 switch (response, data, error) {
                 case (.some(let response as HTTPURLResponse), .some(let data), _): complete(.success((data, response)))
