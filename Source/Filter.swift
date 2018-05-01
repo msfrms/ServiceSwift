@@ -108,4 +108,66 @@ public class TimeoutFilter<Req, Rep>: SimpleFilter<Req, Rep> {
     }
 }
 
+public class DebounceFilter<Req, Rep>: SimpleFilter<Req, Rep> {
+
+    private let queue: DispatchQueue
+    private let delay: DispatchTimeInterval
+    private var serviceWorkItem: DispatchWorkItem?
+
+    public init(delay: DispatchTimeInterval, queue: DispatchQueue = .main) {
+        self.queue = queue
+        self.delay = delay
+    }
+
+    public override func apply(request: Req, service: Service<Req, Rep>) -> Future<Rep> {
+        return Future<Rep>(queue: DispatchQueue(label: "com.service_swift.filter.debounce.queue")) { complete in
+
+            self.serviceWorkItem?.cancel()
+
+            switch self.serviceWorkItem {
+            case .some(let work) where work.isCancelled: service.cancel()
+            default: ()
+            }
+
+            self.serviceWorkItem = DispatchWorkItem { service.apply(request: request).respond(complete) }
+
+            self.queue.asyncAfter(deadline: .now() + self.delay, execute: self.serviceWorkItem!)
+        }
+    }
+}
+
+public class ThrottleFilter<Req, Rep>: SimpleFilter<Req, Rep> {
+
+    private var serviceWorkItem: DispatchWorkItem?
+    private let queue: DispatchQueue
+    private let delay: TimeInterval
+    private var lastFire: TimeInterval = 0
+
+    public init(delay: TimeInterval, queue: DispatchQueue = .main) {
+        self.queue = queue
+        self.delay = delay
+    }
+
+    public override func apply(request: Req, service: Service<Req, Rep>) -> Future<Rep> {
+        return Future<Rep>(queue: self.queue) { complete in
+
+            guard self.serviceWorkItem == nil else { return }
+
+            self.serviceWorkItem = DispatchWorkItem { [unowned self] in
+                service.apply(request: request).respond(complete)
+                self.lastFire = Date().timeIntervalSinceReferenceDate
+                self.serviceWorkItem = nil
+            }
+
+            let hasPassed = Date().timeIntervalSinceReferenceDate - self.delay > self.lastFire
+
+            if hasPassed {
+                self.queue.async(execute: self.serviceWorkItem!)
+            } else {
+                self.queue.asyncAfter(deadline: .now() + self.delay, execute: self.serviceWorkItem!)
+            }
+        }
+    }
+}
+
 
