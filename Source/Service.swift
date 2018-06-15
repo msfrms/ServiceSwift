@@ -10,14 +10,14 @@ public extension Future {
     static var never: Future { return Future<R> { _ in } }
 }
 
-open class Service<Req, Rep> {
+public class Service<Req, Rep> {
 
     public init() {}
 
-    open func apply(request: Req) -> Future<Rep> { return .never }
+    public func apply(request: Req) -> Future<Rep> { return .never }
 
     @discardableResult
-    open func cancel() -> Future<Void> { return .never }
+    public func cancel() -> Future<Void> { return .never }
 }
 
 public extension Service where Req == Void {
